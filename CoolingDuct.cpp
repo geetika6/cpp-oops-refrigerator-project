@@ -1,54 +1,69 @@
+#include <iostream>
+#include "Compressor.cpp"
+#define FIXED_TIME_DELAY 50
+#define MED 50
+using namespace std;
 class CoolingDuct
 {
     int current_temp;
     int new_temp;
-    int degree_of_valve_opening_fridge;
-    int degree_of_valve_opening_freezer;
+    int pressure;
+    int temp_after_valve_change;
+    int mean_pressure;
+    int current_temp_reading;
+    int current_temp_reading_therm;
+    int Timervalue;
     int diff_temp ;
-    Compressor compressor;
+    Compressor* compressor;
+    //TODO here or inside Constructor
     public:
-    CoolingDuct(){};
-    CoolingDuct (Compressor compressor)
+    //CoolingDuct(){};
+    CoolingDuct (Compressor* compressor)
     {
         this->compressor =compressor;
     }
-    int set_fridge_temp(int new_temp);
-    int set_freezer_temp(int new_temp);
+    int set_temp(int mean_pressure,int new_temp);
+    int get_temp();
     int defrost();
 
-    //int valve_change(int degree_of_valve_opening );
+    //int valve_change(int pressure );
 
 };
-int CoolingDuct::set_fridge_temp(int new_temp)
+int CoolingDuct::set_temp(int mean_pressure,int new_temp)
 {
     while( (new_temp>current_temp)||(new_temp<current_temp))
     {
         diff_temp=current_temp-new_temp;
-           // compressor.fridge_valve(open_close_valve +(diff_temp));
-        //TODOdegree_of_valve_opening_fridge=compressor.valve_change(diff_temp);
-        degree_of_valve_opening_fridge=compressor.fridge_valve(diff_temp);
+        pressure=mean_pressure +(diff_temp);
+        compressor->power(1);
+        //time to complete the valve_change distance is proportional to the diff_temp
+        //more pressure more cooling
+        Timervalue=FIXED_TIME_DELAY+diff_temp;
+        for (int i=0;i<Timervalue;i++){;}//when temp equalizes back;i++){;}//when temp equalizes back
+        temp_after_valve_change=get_temp();
+        if (temp_after_valve_change ==new_temp)
+        {
+            current_temp=new_temp;
+            compressor->autorregulate();
+        }
 
-        for (int i=0;i<FIXED_TIME_DELAY;i++){;}//when temp equalizes back
-            temp_after_valve_change=get_temp();
-
+    }
+    if(new_temp==current_temp)
+    {
+        compressor->autorregulate();
     }
 }
-int CoolingDuct::set_freezer_temp(int new_temp)
+int CoolingDuct::get_temp()
 {
-    while( (new_temp>current_temp)||(new_temp<current_temp))
-    {
-        diff_temp=current_temp-new_temp;
-           // compressor.fridge_valve(open_close_valve +(diff_temp));
-        degree_of_valve_opening_freezer=compressor.freezer_valve(diff_temp);
-        //TODOdegree_of_valve_opening_freezer=compressor.valve_change(diff_temp);
-
-        for (int i=0;i<FIXED_TIME_DELAY;i++){;}//when temp equalizes back
-            temp_after_valve_change=get_temp();
-
-    }
+    //read temp
+    //current_temp_reading=read_thermometer();
+    cout <<"The value of temp set is:";
+    cin >>current_temp_reading;
+    current_temp_reading_therm=current_temp_reading;
+    return current_temp_reading_therm;
 }
 int CoolingDuct::defrost()
 {
-    compressor.power(0);
+    compressor->power(0);
 
 }
